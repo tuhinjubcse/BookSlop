@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Figure 1</title>
+<style>
+  body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #ffffff; }
+  .container { max-width: 1440px; margin: 0 auto; }
+  svg { width: 100%; height: auto; display: block; }
+  .panel-letter { font-size: 24px; font-weight: bold; fill: #333; }
+  .panel-title  { font-size: 20px; fill: #333; }
+  .axis-label   { font-size: 16px; fill: #333; }
+  .tick         { font-size: 14px; fill: #555; }
+  .facet-title  { font-size: 15px; fill: #333; font-weight: 600; }
+  .facet-total  { font-size: 13px; fill: #888; }
+  .grid-line    { stroke: #f0f0f0; stroke-width: 0.5; }
+  .reference-line { stroke: #666; stroke-dasharray: 3,3; stroke-width: 1; }
+  .axis-line    { stroke: #666; stroke-width: 1; }
+  .legend       { font-size: 15px; fill: #333; }
+  .guide-line   { stroke: #e0e0e0; stroke-width: 0.7; stroke-dasharray: 2,3; }
+</style>
+</head>
+<body>
+<div class="container">
+  <svg id="figure" viewBox="0 0 1400 1010" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1400" height="1010" fill="white"/>
+  </svg>
+</div>
+
+<script>
+// Color palette: orange + blue (user request), Human dark gray
+const COLORS = {
+  human:      '#404040',
+  aiAssisted: '#2166ac',
+  aiMajority: '#E07B39',
+  reference:  '#bbbbbb',
+  text:       '#333333',
+  textMuted:  '#666666',
+};
+const GROUP_COLOR = {
+  'No detected AI':       COLORS.human,
+  'AI-detected (0,25%]':  COLORS.aiAssisted,
+  'AI-detected >25%':     COLORS.aiMajority,
+};
+
+const LABEL_OVERRIDE = {
+  'Science Fiction / Adventure / Dystopian': 'Sci-Fi / Adventure',
+  'Speculative / Adventure Romance':         'Speculative Romance',
+  'General / Contemporary Fiction':          'Contemporary Fiction',
+  'Fantasy / Supernatural / Horror':         'Fantasy / Horror',
+};
+const shortLabel = (n) => LABEL_OVERRIDE[n] || n;
+
+const DATA = {"fig1A":[{"cluster":"Crime / Suspense Romance","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":42,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2023 Q2","share":13.64,"overall":7.86,"n":44,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2023 Q3","share":7.89,"overall":13.84,"n":38,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2023 Q4","share":23.53,"overall":23.35,"n":34,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2024 Q1","share":6.67,"overall":8.8,"n":120,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2024 Q2","share":13.84,"overall":9.66,"n":159,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2024 Q3","share":17.01,"overall":13.64,"n":147,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2024 Q4","share":23.13,"overall":17.74,"n":147,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2025 Q1","share":27.32,"overall":22.24,"n":183,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2025 Q2","share":35.14,"overall":27.51,"n":148,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2025 Q3","share":29.37,"overall":31.57,"n":126,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2025 Q4","share":38.27,"overall":38.08,"n":81,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Crime / Suspense Romance","quarter":"2026 Q1","share":52.34,"overall":36.81,"n":107,"low_n":false,"sort_order":1,"total_n":1376,"total_label":"N=1,376"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":10,"low_n":true,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2023 Q2","share":20.0,"overall":7.86,"n":15,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2023 Q3","share":18.18,"overall":13.84,"n":11,"low_n":true,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2023 Q4","share":60.0,"overall":23.35,"n":20,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2024 Q1","share":13.04,"overall":8.8,"n":46,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2024 Q2","share":4.08,"overall":9.66,"n":49,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2024 Q3","share":17.02,"overall":13.64,"n":47,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2024 Q4","share":18.37,"overall":17.74,"n":49,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2025 Q1","share":25.0,"overall":22.24,"n":52,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2025 Q2","share":22.86,"overall":27.51,"n":35,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2025 Q3","share":20.0,"overall":31.57,"n":40,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2025 Q4","share":20.0,"overall":38.08,"n":15,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Science Fiction / Adventure / Dystopian","quarter":"2026 Q1","share":47.17,"overall":36.81,"n":53,"low_n":false,"sort_order":2,"total_n":442,"total_label":"N=442"},{"cluster":"Mystery / Thriller / Crime","quarter":"2023 Q1","share":5.56,"overall":1.06,"n":72,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2023 Q2","share":12.05,"overall":7.86,"n":83,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2023 Q3","share":24.39,"overall":13.84,"n":82,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2023 Q4","share":27.66,"overall":23.35,"n":94,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2024 Q1","share":21.43,"overall":8.8,"n":182,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2024 Q2","share":25.81,"overall":9.66,"n":186,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2024 Q3","share":21.51,"overall":13.64,"n":172,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2024 Q4","share":25.71,"overall":17.74,"n":140,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2025 Q1","share":26.12,"overall":22.24,"n":134,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2025 Q2","share":42.75,"overall":27.51,"n":138,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2025 Q3","share":44.21,"overall":31.57,"n":95,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2025 Q4","share":60.87,"overall":38.08,"n":46,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Mystery / Thriller / Crime","quarter":"2026 Q1","share":44.74,"overall":36.81,"n":114,"low_n":false,"sort_order":3,"total_n":1538,"total_label":"N=1,538"},{"cluster":"Speculative / Adventure Romance","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":56,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2023 Q2","share":1.82,"overall":7.86,"n":55,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2023 Q3","share":4.62,"overall":13.84,"n":65,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2023 Q4","share":13.7,"overall":23.35,"n":73,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2024 Q1","share":7.17,"overall":8.8,"n":251,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2024 Q2","share":7.89,"overall":9.66,"n":266,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2024 Q3","share":12.17,"overall":13.64,"n":230,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2024 Q4","share":16.73,"overall":17.74,"n":275,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2025 Q1","share":20.17,"overall":22.24,"n":233,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2025 Q2","share":33.87,"overall":27.51,"n":248,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2025 Q3","share":34.09,"overall":31.57,"n":220,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2025 Q4","share":38.17,"overall":38.08,"n":131,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"Speculative / Adventure Romance","quarter":"2026 Q1","share":46.72,"overall":36.81,"n":122,"low_n":false,"sort_order":4,"total_n":2225,"total_label":"N=2,225"},{"cluster":"General Romance","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":94,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2023 Q2","share":7.76,"overall":7.86,"n":116,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2023 Q3","share":16.0,"overall":13.84,"n":100,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2023 Q4","share":19.08,"overall":23.35,"n":152,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2024 Q1","share":8.52,"overall":8.8,"n":481,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2024 Q2","share":6.92,"overall":9.66,"n":448,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2024 Q3","share":12.44,"overall":13.64,"n":442,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2024 Q4","share":16.84,"overall":17.74,"n":576,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2025 Q1","share":21.73,"overall":22.24,"n":405,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2025 Q2","share":22.42,"overall":27.51,"n":388,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2025 Q3","share":28.83,"overall":31.57,"n":333,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2025 Q4","share":35.34,"overall":38.08,"n":249,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General Romance","quarter":"2026 Q1","share":37.27,"overall":36.81,"n":381,"low_n":false,"sort_order":5,"total_n":4165,"total_label":"N=4,165"},{"cluster":"General / Contemporary Fiction","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":48,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2023 Q2","share":5.41,"overall":7.86,"n":37,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2023 Q3","share":16.67,"overall":13.84,"n":48,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2023 Q4","share":35.29,"overall":23.35,"n":68,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2024 Q1","share":5.81,"overall":8.8,"n":241,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2024 Q2","share":7.92,"overall":9.66,"n":240,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2024 Q3","share":10.12,"overall":13.64,"n":168,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2024 Q4","share":16.13,"overall":17.74,"n":186,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2025 Q1","share":19.01,"overall":22.24,"n":142,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2025 Q2","share":27.42,"overall":27.51,"n":124,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2025 Q3","share":26.8,"overall":31.57,"n":97,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2025 Q4","share":37.35,"overall":38.08,"n":83,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"General / Contemporary Fiction","quarter":"2026 Q1","share":30.3,"overall":36.81,"n":165,"low_n":false,"sort_order":6,"total_n":1647,"total_label":"N=1,647"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":45,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2023 Q2","share":3.28,"overall":7.86,"n":61,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2023 Q3","share":6.45,"overall":13.84,"n":62,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2023 Q4","share":14.67,"overall":23.35,"n":75,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2024 Q1","share":6.45,"overall":8.8,"n":279,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2024 Q2","share":6.39,"overall":9.66,"n":266,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2024 Q3","share":10.74,"overall":13.64,"n":242,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2024 Q4","share":16.4,"overall":17.74,"n":250,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2025 Q1","share":21.4,"overall":22.24,"n":215,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2025 Q2","share":18.23,"overall":27.51,"n":203,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2025 Q3","share":33.54,"overall":31.57,"n":158,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2025 Q4","share":40.65,"overall":38.08,"n":123,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Fantasy / Supernatural / Horror","quarter":"2026 Q1","share":26.54,"overall":36.81,"n":211,"low_n":false,"sort_order":7,"total_n":2190,"total_label":"N=2,190"},{"cluster":"Sports Romance","quarter":"2023 Q1","share":0.0,"overall":1.06,"n":9,"low_n":true,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2023 Q2","share":0.0,"overall":7.86,"n":9,"low_n":true,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2023 Q3","share":15.38,"overall":13.84,"n":13,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2023 Q4","share":26.67,"overall":23.35,"n":15,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2024 Q1","share":4.23,"overall":8.8,"n":71,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2024 Q2","share":4.76,"overall":9.66,"n":84,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2024 Q3","share":15.94,"overall":13.64,"n":69,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2024 Q4","share":11.76,"overall":17.74,"n":85,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2025 Q1","share":19.82,"overall":22.24,"n":111,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2025 Q2","share":21.54,"overall":27.51,"n":130,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2025 Q3","share":32.0,"overall":31.57,"n":100,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2025 Q4","share":32.31,"overall":38.08,"n":65,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"},{"cluster":"Sports Romance","quarter":"2026 Q1","share":20.0,"overall":36.81,"n":75,"low_n":false,"sort_order":8,"total_n":836,"total_label":"N=836"}],"fig1C":[{"group":"No detected AI","metric":"Title share","order":1,"share_pct":62.89,"label":"62.9%"},{"group":"No detected AI","metric":"Sales share","order":2,"share_pct":71.73,"label":"71.7%"},{"group":"No detected AI","metric":"Revenue share","order":3,"share_pct":72.51,"label":"72.5%"},{"group":"AI-detected (0,25%]","metric":"Title share","order":1,"share_pct":17.14,"label":"17.1%"},{"group":"AI-detected (0,25%]","metric":"Sales share","order":2,"share_pct":16.19,"label":"16.2%"},{"group":"AI-detected (0,25%]","metric":"Revenue share","order":3,"share_pct":16.23,"label":"16.2%"},{"group":"AI-detected >25%","metric":"Title share","order":1,"share_pct":19.97,"label":"20.0%"},{"group":"AI-detected >25%","metric":"Sales share","order":2,"share_pct":12.08,"label":"12.1%"},{"group":"AI-detected >25%","metric":"Revenue share","order":3,"share_pct":11.26,"label":"11.3%"}]};
+
+// Panel B tier composition (from fig1B_tail_tier_composition.csv).
+// share = exact fraction (for bar widths); pctLabel = rounded integer (for text).
+const FIG1B_TIERS = [
+  {
+    "tier": "All titles",
+    "total": 14419,
+    "nLabel": "N=14,419",
+    "isBase": true,
+    "parts": [
+      {
+        "group": "No detected AI",
+        "share": 0.628892,
+        "pctLabel": "63%"
+      },
+      {
+        "group": "AI-detected (0,25%]",
+        "share": 0.171371,
+        "pctLabel": "17%"
+      },
+      {
+        "group": "AI-detected >25%",
+        "share": 0.199736,
+        "pctLabel": "20%"
+      }
+    ]
+  },
+  {
+    "tier": "Top 50%",
+    "total": 7235,
+    "nLabel": "N=7,235",
+    "isBase": false,
+    "parts": [
+      {
+        "group": "No detected AI",
+        "share": 0.659157,
+        "pctLabel": "66%"
+      },
+      {
+        "group": "AI-detected (0,25%]",
+        "share": 0.176365,
+        "pctLabel": "18%"
+      },
+      {
+        "group": "AI-detected >25%",
+        "share": 0.164478,
+        "pctLabel": "16%"
+      }
+    ]
+  },
+  {
+    "tier": "Top 25%",
+    "total": 3643,
+    "nLabel": "N=3,643",
+    "isBase": false,
+    "parts": [
+      {
+        "group": "No detected AI",
+        "share": 0.687071,
+        "pctLabel": "69%"
+      },
+      {
+        "group": "AI-detected (0,25%]",
+        "share": 0.172111,
+        "pctLabel": "17%"
+      },
+      {
+        "group": "AI-detected >25%",
+        "share": 0.140818,
+        "pctLabel": "14%"
+      }
+    ]
+  },
+  {
+    "tier": "Top 10%",
+    "total": 1490,
+    "nLabel": "N=1,490",
+    "isBase": false,
+    "parts": [
+      {
+        "group": "No detected AI",
+        "share": 0.710067,
+        "pctLabel": "71%"
+      },
+      {
+        "group": "AI-detected (0,25%]",
+        "share": 0.17651,
+        "pctLabel": "18%"
+      },
+      {
+        "group": "AI-detected >25%",
+        "share": 0.113423,
+        "pctLabel": "11%"
+      }
+    ]
+  },
+  {
+    "tier": "Top 5%",
+    "total": 773,
+    "nLabel": "N=773",
+    "isBase": false,
+    "parts": [
+      {
+        "group": "No detected AI",
+        "share": 0.727038,
+        "pctLabel": "73%"
+      },
+      {
+        "group": "AI-detected (0,25%]",
+        "share": 0.168176,
+        "pctLabel": "17%"
+      },
+      {
+        "group": "AI-detected >25%",
+        "share": 0.104787,
+        "pctLabel": "10%"
+      }
+    ]
+  }
+];
+
+const svg = document.getElementById('figure');
+const SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs = {}, parent = svg) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e);
+  return e;
+}
+function txt(x, y, text, attrs = {}, parent = svg) {
+  const t = el('text', { x, y, ...attrs }, parent);
+  t.textContent = text;
+  return t;
+}
+const scale = (d0, d1, r0, r1) => (v) => r0 + ((v - d0) / (d1 - d0)) * (r1 - r0);
+
+// Band display with subscript 'detected' (bands 2 & 3); band 1 plain.
+const BAND_DISPLAY = {
+  'No detected AI':      [['No AI text',0,1]],
+  'AI-detected (0,25%]': [['Light AI text (\u226425%)',0,1]],
+  'AI-detected >25%':    [['Substantial AI text (>25%)',0,1]],
+};
+function bandText(x, y, band, attrs = {}, parent = svg, suffix = '') {
+  const t = el('text', { x, y, ...attrs }, parent);
+  for (const [s, dy, sz] of BAND_DISPLAY[band]) {
+    const ts = document.createElementNS(SVGNS, 'tspan');
+    ts.textContent = s;
+    if (dy) ts.setAttribute('dy', dy);
+    if (sz !== 1) ts.setAttribute('font-size', sz + 'em');
+    t.appendChild(ts);
+  }
+  if (suffix) { const ts = document.createElementNS(SVGNS, 'tspan'); ts.textContent = suffix; t.appendChild(ts); }
+  return t;
+}
+
+// =============================================================================
+// PANEL A: small multiples diffusion (with point-size encoding + facet totals)
+// =============================================================================
+function renderPanelA() {
+  const xOrigin = 20;
+  const yOrigin = 30;
+  const headerH = 30;
+
+  txt(xOrigin + 30, yOrigin + 18, 'A.', { class: 'panel-letter' });
+  txt(xOrigin + 60, yOrigin + 18, 'Books with AI text are diffusing into every genre', { class: 'panel-title' });
+  txt(xOrigin + 60, yOrigin + 38, 'Share of new releases with substantial AI text, by genre and quarter', { class: 'axis-label', fill: COLORS.textMuted });
+
+  const gridX = xOrigin + 20;
+  const gridY = yOrigin + headerH + 20;
+  const cols = 4;
+  const rows = 2;
+  const panelW = 330;
+  const panelH = 200;
+
+  const grouped = {};
+  for (const r of DATA.fig1A) {
+    if (!grouped[r.cluster]) grouped[r.cluster] = { sort: r.sort_order, total_label: r.total_label, rows: [] };
+    grouped[r.cluster].rows.push(r);
+  }
+  const clusters = Object.entries(grouped)
+    .map(([name, v]) => ({
+      name, sort: v.sort, total_label: v.total_label,
+      rows: v.rows.sort((a, b) => a.quarter.localeCompare(b.quarter))
+    }))
+    .sort((a, b) => a.sort - b.sort);
+
+  // Volume area scale: rounded up from observed max of 574 to give a clean axis
+  const BAR_AXIS_MAX = 600;
+
+  clusters.forEach((c, idx) => {
+    const row = Math.floor(idx / cols);
+    const col = idx % cols;
+    const px = gridX + col * panelW;
+    const py = gridY + row * panelH;
+    const showY = col === 0;
+    const showX = row === rows - 1;
+
+    // Sub-panel layout (in g-local coordinates):
+    //   0     : top of line plot
+    //   linePlotH (=100)         : bottom of line plot (= 0% gridline)
+    //   linePlotH + gapH (=108)  : top of bar strip
+    //   barStripBottom (=136)    : bottom of bar strip (= shared x-axis)
+    //   barStripBottom + 16 (=152): year tick labels (bottom row only)
+    const m = { top: 22, right: 18, left: showY ? 38 : 14 };
+    const linePlotH = 100;
+    const gapH = 8;
+    const barStripH = 28;
+    const barStripTop = linePlotH + gapH;
+    const barStripBottom = barStripTop + barStripH;
+    const innerW = panelW - m.left - m.right - 10;
+
+    // Facet title + total. Total N is right-anchored to the panel's right
+    // edge (past the plot area) so it clears even the longest facet title.
+    txt(px + m.left, py + 14, `${c.sort}. ${shortLabel(c.name)}`, { class: 'facet-title' });
+    txt(px + panelW - 2, py + 14, c.total_label, {
+      class: 'facet-total', 'text-anchor': 'end'
+    });
+
+    const g = el('g', { transform: `translate(${px + m.left},${py + m.top})` });
+
+    const xS = scale(0, 12, 0, innerW);
+    const yS = scale(0, 65, linePlotH, 0);
+    const yTicks = [0, 20, 40, 60];
+    const xTickIdx = [0, 4, 8, 12];
+
+    // --- LINE PLOT (top sub-panel) ---
+    // Gridlines
+    for (const t of yTicks) {
+      el('line', { x1: 0, x2: innerW, y1: yS(t), y2: yS(t), class: 'grid-line' }, g);
+    }
+    // Y-axis labels (leftmost column only)
+    if (showY) {
+      for (const t of yTicks) {
+        txt(-6, yS(t) + 4, `${t}%`, { class: 'tick', 'text-anchor': 'end' }, g);
+      }
+    }
+    // Overall market reference line
+    const overallPath = c.rows.map((r, i) => `${i === 0 ? 'M' : 'L'} ${xS(i)} ${yS(r.overall)}`).join(' ');
+    el('path', { d: overallPath, fill: 'none', stroke: COLORS.reference, 'stroke-width': 1.4, 'stroke-dasharray': '3,2' }, g);
+    // Cluster line
+    const sharePath = c.rows.map((r, i) => `${i === 0 ? 'M' : 'L'} ${xS(i)} ${yS(r.share)}`).join(' ');
+    el('path', { d: sharePath, fill: 'none', stroke: COLORS.aiMajority, 'stroke-width': 2 }, g);
+    // Uniform small dots on the share line
+    c.rows.forEach((r, i) => {
+      el('circle', {
+        cx: xS(i), cy: yS(r.share),
+        r: 2.2,
+        fill: COLORS.aiMajority,
+        stroke: COLORS.aiMajority,
+        'stroke-width': 1
+      }, g);
+    });
+    // Line-plot baseline at 0%
+    el('line', { x1: 0, x2: innerW, y1: linePlotH, y2: linePlotH, class: 'axis-line' }, g);
+
+    // --- VOLUME AREA (bottom sub-panel, separate scale) ---
+    const areaTopPoints = c.rows.map((r, i) => {
+      const barH = (r.n / BAR_AXIS_MAX) * barStripH;
+      return [xS(i), barStripBottom - barH];
+    });
+    // Closed polygon for fill (top edge + right side down to baseline + back along baseline)
+    const polygonPoints = [
+      ...areaTopPoints.map(([x, y]) => `${x},${y}`),
+      `${xS(12)},${barStripBottom}`,
+      `${xS(0)},${barStripBottom}`
+    ].join(' ');
+    el('polygon', {
+      points: polygonPoints,
+      fill: '#dcdcdc',
+      stroke: 'none'
+    }, g);
+    // Top-edge stroke (darker, traces the n_titles curve)
+    const topEdgePath = areaTopPoints
+      .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x} ${y}`)
+      .join(' ');
+    el('path', {
+      d: topEdgePath, fill: 'none', stroke: '#888888', 'stroke-width': 1
+    }, g);
+    // Volume-area y-axis labels: 0 at baseline, scale max at top (leftmost column only)
+    if (showY) {
+      txt(-6, barStripTop + 9, String(BAR_AXIS_MAX), {
+        class: 'tick', 'text-anchor': 'end', fill: COLORS.textMuted, 'font-size': 10
+      }, g);
+      txt(-6, barStripBottom + 1, '0', {
+        class: 'tick', 'text-anchor': 'end', fill: COLORS.textMuted, 'font-size': 10
+      }, g);
+    }
+    // Bar-strip baseline (shared x-axis)
+    el('line', { x1: 0, x2: innerW, y1: barStripBottom, y2: barStripBottom, class: 'axis-line' }, g);
+
+    // --- SHARED X-AXIS LABELS (shown on every panel for direct readability) ---
+    for (const i of xTickIdx) {
+      el('line', { x1: xS(i), x2: xS(i), y1: barStripBottom, y2: barStripBottom + 3, class: 'axis-line' }, g);
+      const yearLabel = c.rows[i].quarter.split(' ')[0];
+      txt(xS(i), barStripBottom + 14, yearLabel, { class: 'tick', 'text-anchor': 'middle' }, g);
+    }
+  });
+
+  // Legend: three items (line, dashed reference, faint bars)
+  const legY = gridY + rows * panelH + 8;
+  const legX = gridX + 20;
+
+  el('line', { x1: legX, x2: legX + 24, y1: legY, y2: legY, stroke: COLORS.aiMajority, 'stroke-width': 2 });
+  el('circle', { cx: legX + 12, cy: legY, r: 2.2, fill: COLORS.aiMajority, stroke: COLORS.aiMajority, 'stroke-width': 1 });
+  bandText(legX + 30, legY + 4, 'AI-detected >25%', { class: 'legend' }, svg);
+
+  el('line', { x1: legX + 215, x2: legX + 239, y1: legY, y2: legY, stroke: COLORS.reference, 'stroke-width': 1.4, 'stroke-dasharray': '3,2' });
+  txt(legX + 245, legY + 4, 'Average across all genres', { class: 'legend' });
+
+  el('rect', { x: legX + 555, y: legY - 6, width: 14, height: 12, fill: '#dcdcdc' });
+  el('line', { x1: legX + 555, x2: legX + 569, y1: legY - 6, y2: legY - 6, stroke: '#888888', 'stroke-width': 1 });
+  txt(legX + 575, legY + 4, 'Quarterly new releases (common scale, max = ' + BAR_AXIS_MAX + ')', { class: 'legend' });
+}
+
+// =============================================================================
+// PANEL B: continuous upper-tail representation curve
+// =============================================================================
+function renderPanelB() {
+  const xOrigin = 20;
+  const yOrigin = 530;
+  const headerH = 30;
+
+  txt(xOrigin + 30, yOrigin + 18, 'B.', { class: 'panel-letter' });
+  txt(xOrigin + 60, yOrigin + 18, 'Most top-selling books have no AI text', { class: 'panel-title' });
+  txt(xOrigin + 60, yOrigin + 40, 'Composition of each sales-rank tier by AI-text band (launch window)',
+      { class: 'axis-label', fill: COLORS.textMuted });
+
+  const groups = ['No detected AI', 'AI-detected (0,25%]', 'AI-detected >25%'];
+
+  // Plot geometry. Bars are horizontal; one row per tier.
+  const plotX = xOrigin + 130;          // left edge of bars (room for tier labels)
+  const plotY = yOrigin + headerH + 40; // top of first bar
+  const plotW = 470;                    // 0-100% width
+  const barH = 40;
+  const rowGap = 22;
+  const baseGap = 16;                   // extra gap under the "All titles" anchor
+
+  const xS = scale(0, 1, 0, plotW);
+
+  // Compute a y-position for each tier row, inserting a divider after the base row.
+  let y = 0;
+  const rows = FIG1B_TIERS.map((t, i) => {
+    const top = y;
+    y += barH + rowGap + (t.isBase ? baseGap : 0);
+    return { ...t, top };
+  });
+  const plotBottom = rows[rows.length - 1].top + barH;
+
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+
+  // Vertical gridlines at 0/25/50/75/100 behind the bars
+  const xTicks = [0, 0.25, 0.50, 0.75, 1.0];
+  for (const t of xTicks) {
+    el('line', { x1: xS(t), x2: xS(t), y1: -4, y2: plotBottom + 4, class: 'grid-line' }, g);
+  }
+
+  // Divider line separating the "All titles" baseline from the tiers
+  const baseRow = rows.find(r => r.isBase);
+  if (baseRow) {
+    const dy = baseRow.top + barH + (baseGap + rowGap) / 2;
+    el('line', { x1: -120, x2: plotW, y1: dy, y2: dy,
+                 stroke: '#d8d8d8', 'stroke-width': 1 }, g);
+  }
+
+  // Draw each tier row: stacked segments, inside % labels, tier label, n label.
+  rows.forEach(row => {
+    const cy = row.top + barH / 2;
+
+    // Tier label (left)
+    txt(-16, cy + 5, row.tier, {
+      class: 'axis-label', 'text-anchor': 'end',
+      'font-weight': row.isBase ? 700 : 400
+    }, g);
+
+    // Stacked segments
+    let cum = 0;
+    row.parts.forEach(p => {
+      const x0 = xS(cum);
+      const x1 = xS(cum + p.share);
+      const w = x1 - x0;
+      el('rect', { x: x0, y: row.top, width: w, height: barH,
+                   fill: GROUP_COLOR[p.group] }, g);
+      // Inside percentage label, only if the segment is wide enough.
+      // For too-narrow AI-Majority segments, place the label just above
+      // the bar's right end in the group color so the shrink stays legible.
+      if (w > 26) {
+        txt((x0 + x1) / 2, cy + 5, p.pctLabel, {
+          'text-anchor': 'middle', fill: '#ffffff',
+          'font-size': 14, 'font-weight': 700
+        }, g);
+      } else if (p.group === 'AI-detected >25%') {
+        txt(x1 - 2, row.top - 5, p.pctLabel, {
+          'text-anchor': 'end', fill: GROUP_COLOR['AI-detected >25%'],
+          'font-size': 13, 'font-weight': 700
+        }, g);
+      }
+      cum += p.share;
+    });
+
+    // n label (right of bar)
+    txt(plotW + 12, cy + 5, row.nLabel, {
+      class: 'tick', 'text-anchor': 'start', fill: COLORS.textMuted
+    }, g);
+  });
+
+  // X-axis baseline, ticks, labels
+  el('line', { x1: 0, x2: plotW, y1: plotBottom + 4, y2: plotBottom + 4, class: 'axis-line' }, g);
+  xTicks.forEach(t => {
+    el('line', { x1: xS(t), x2: xS(t), y1: plotBottom + 4, y2: plotBottom + 8, class: 'axis-line' }, g);
+    txt(xS(t), plotBottom + 24, Math.round(t * 100) + '%', { class: 'tick', 'text-anchor': 'middle' }, g);
+  });
+  txt(plotW / 2, plotBottom + 46, 'Share of titles within tier', {
+    class: 'axis-label', 'text-anchor': 'middle'
+  }, g);
+
+  // Legend (centered under the plot)
+  const legY = plotBottom + 74;
+  const legItems = [
+    { group: 'No detected AI', label: 'No AI text' },
+    { group: 'AI-detected (0,25%]', label: 'Light AI text (<=25%)' },
+    { group: 'AI-detected >25%', label: 'Substantial AI text (>25%)' },
+  ];
+  const sw = 16, txtGap = 7, itemGap = 22, charPx = 7.4;
+  const widths = legItems.map(it => sw + txtGap + it.label.length * charPx);
+  const totalW = widths.reduce((a, b) => a + b, 0) + (legItems.length - 1) * itemGap;
+  let lx = plotW / 2 - totalW / 2;
+  legItems.forEach((it, i) => {
+    el('rect', { x: lx, y: legY - 12, width: sw, height: sw, fill: GROUP_COLOR[it.group] }, g);
+    bandText(lx + sw + txtGap, legY + 1, it.group, { class: 'legend' }, g);
+    lx += widths[i] + itemGap;
+  });
+}
+
+// =============================================================================
+// PANEL C: slopegraph (unchanged structure; colors updated to orange/blue)
+// =============================================================================
+function renderPanelC() {
+  const xOrigin = 740;
+  const yOrigin = 530;
+  const headerH = 30;
+
+  txt(xOrigin + 30, yOrigin + 18, 'C.', { class: 'panel-letter' });
+  txt(xOrigin + 60, yOrigin + 18, 'Books with AI text capture more of the catalog than of sales', { class: 'panel-title' });
+  txt(xOrigin + 60, yOrigin + 40, 'Share of books, sales, and revenue by AI-text band (launch window)',
+      { class: 'axis-label', fill: COLORS.textMuted });
+
+  const plotX = xOrigin + 90;
+  const plotY = yOrigin + headerH + 40;
+  const plotW = 480;
+  const plotH = 320;
+
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+
+  const metrics = ['Title share', 'Sales share', 'Revenue share'];
+  const groups = ['No detected AI', 'AI-detected (0,25%]', 'AI-detected >25%'];
+  const xS = scale(0, metrics.length - 1, 0, plotW);
+  const yS = scale(0, 80, plotH, 0);
+  const yTicks = [0, 20, 40, 60, 80];
+
+  for (const t of yTicks) {
+    el('line', { x1: 0, x2: plotW, y1: yS(t), y2: yS(t), class: 'grid-line' }, g);
+  }
+  metrics.forEach((m, i) => {
+    el('line', {
+      x1: xS(i), x2: xS(i), y1: 0, y2: plotH,
+      stroke: '#d8d8d8', 'stroke-width': 1, 'stroke-dasharray': '2,3'
+    }, g);
+  });
+
+  const byGroup = {};
+  for (const gr of groups) {
+    byGroup[gr] = metrics.map(m => DATA.fig1C.find(d => d.group === gr && d.metric === m));
+  }
+
+  for (const gr of groups) {
+    const pts = byGroup[gr];
+    const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xS(i)} ${yS(p.share_pct)}`).join(' ');
+    el('path', { d: path, fill: 'none', stroke: GROUP_COLOR[gr], 'stroke-width': 2.4 }, g);
+  }
+
+  // Group names sit at the LEFT end, on top of each line, replacing the
+  // right-side labels to save horizontal space. AI-Majority goes just below
+  // its line (it is the lowest), the other two just above theirs.
+  const HEAVY = 'AI-detected >25%';
+  for (const gr of groups) {
+    const pts = byGroup[gr];
+    pts.forEach((p, i) => {
+      el('circle', {
+        cx: xS(i), cy: yS(p.share_pct), r: 4.2,
+        fill: GROUP_COLOR[gr], stroke: '#fff', 'stroke-width': 1.5
+      }, g);
+      const anchor = i === 0 ? 'start' : (i === pts.length - 1 ? 'end' : 'middle');
+      let dy = (gr === HEAVY) ? 16 : -9;            // heavy band labels below its line
+      // At the Title-share point, the heavy (20.0%) and light (17.1%) values
+      // nearly coincide, so the default rule collides them. Flip: push the
+      // heavy label above its line and the light label below, to separate them.
+      if (i === 0 && gr === HEAVY) dy = -9;
+      if (i === 0 && gr === 'AI-detected (0,25%]') dy = 16;
+      txt(xS(i), yS(p.share_pct) + dy, p.label, {
+        class: 'tick', fill: GROUP_COLOR[gr], 'font-weight': 600,
+        'font-size': 12, 'text-anchor': anchor
+      }, g);
+    });
+  }
+
+  // Band legend (no box), in the open middle band between the no-AI line and the AI bands
+  const legX = 8, legY0 = 116, legRowH = 26, legLine = 24;
+  groups.forEach((gr, i) => {
+    const ry = legY0 + i * legRowH;
+    el('line', { x1: legX, x2: legX + legLine, y1: ry, y2: ry, stroke: GROUP_COLOR[gr], 'stroke-width': 2.6, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: legX + legLine / 2, cy: ry, r: 4.2, fill: GROUP_COLOR[gr], stroke: '#fff', 'stroke-width': 1.5 }, g);
+    bandText(legX + legLine + 8, ry + 4, gr, { class: 'legend', fill: GROUP_COLOR[gr], 'font-weight': 600, 'text-anchor': 'start' }, g);
+  });
+
+  el('line', { x1: 0, x2: plotW, y1: plotH, y2: plotH, class: 'axis-line' }, g);
+  metrics.forEach((m, i) => {
+    txt(xS(i), plotH + 22, m, {
+      class: 'axis-label', 'text-anchor': 'middle', 'font-weight': 500
+    }, g);
+  });
+
+  for (const t of yTicks) {
+    txt(-8, yS(t) + 4, `${t}%`, { class: 'tick', 'text-anchor': 'end' }, g);
+  }
+  txt(-60, plotH / 2, 'Share of total (%)', {
+    class: 'axis-label', 'text-anchor': 'middle',
+    transform: `rotate(-90, -60, ${plotH / 2})`
+  }, g);
+}
+
+renderPanelA();
+renderPanelB();
+renderPanelC();
+</script>
+</body>
+</html>
