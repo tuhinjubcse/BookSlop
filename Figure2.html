@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Figure 2</title>
+<style>
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #1a1a1a;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  svg { width: 100%; height: auto; display: block; }
+  /* Sizes are pre-divided by CANVAS_SCALE (7/6) so that, after the canvas group
+     scales the drawing up to the 1400-wide grid, text renders at Figure 1's
+     point sizes: 24 / 20 / 16 / 15 / 14. */
+  .panel-letter { font-size: 20.571px; font-weight: bold; fill: #333; }
+  .panel-title  { font-size: 17.143px; fill: #333; }
+  .axis-label { font-size: 13.714px; fill: #333; }
+  .tick { font-size: 12px; fill: #555; }
+  .legend { font-size: 12.857px; fill: #333; }
+  .direct-label { font-size: 12.857px; font-weight: 600; }
+  .heatmap-row-label { font-size: 12.857px; font-weight: 600; fill: #333; }
+  .colorbar-title { font-size: 12.857px; font-weight: 600; fill: #333; }
+</style>
+</head>
+<body>
+<div class="container">
+  <svg id="figure" viewBox="0 0 1400 1260" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="colorbar-grad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"  stop-color="#fff4e6"/>
+        <stop offset="50%" stop-color="#e8a877"/>
+        <stop offset="100%" stop-color="#9c4a1f"/>
+      </linearGradient>
+    </defs>
+    <rect width="1400" height="1260" fill="white"/>
+  </svg>
+</div>
+
+<script>
+const VIEW_W = 1200;
+
+const COLORS = {
+  human:      '#404040',
+  aiAssisted: '#2166ac',
+  aiMajority: '#E07B39',
+  na:         '#e8e8e8',
+  refLine:    '#888888',
+  gridline:   '#e0e0e0',
+  axis:       '#888888',
+  textMuted:  '#666666',
+  heatLow:    [0xff, 0xf4, 0xe6],
+  heatHigh:   [0x9c, 0x4a, 0x1f],
+};
+const GROUP_COLOR = { noai: COLORS.human, light: COLORS.aiAssisted, subst: COLORS.aiMajority };
+const BAND_DISPLAY = { noai: 'No AI text', light: 'Light AI text (\u226425%)', subst: 'Substantial AI text (>25%)' };
+function bandText(x, y, key, attrs = {}, parent = svg) {
+  const t = el('text', { x, y, ...attrs }, parent); t.textContent = BAND_DISPLAY[key]; return t;
+}
+
+const DATA = {"fig2A":[{"idx":0,"group":"noai","pct":95.59},{"idx":0,"group":"light","pct":4.17},{"idx":0,"group":"subst","pct":0.24},{"idx":1,"group":"noai","pct":86.72},{"idx":1,"group":"light","pct":12.22},{"idx":1,"group":"subst","pct":1.06},{"idx":2,"group":"noai","pct":79.4},{"idx":2,"group":"light","pct":18.28},{"idx":2,"group":"subst","pct":2.32},{"idx":3,"group":"noai","pct":74.33},{"idx":3,"group":"light","pct":21.09},{"idx":3,"group":"subst","pct":4.58},{"idx":4,"group":"noai","pct":80.99},{"idx":4,"group":"light","pct":14.8},{"idx":4,"group":"subst","pct":4.22},{"idx":5,"group":"noai","pct":79.54},{"idx":5,"group":"light","pct":15.5},{"idx":5,"group":"subst","pct":4.97},{"idx":6,"group":"noai","pct":79.69},{"idx":6,"group":"light","pct":14.4},{"idx":6,"group":"subst","pct":5.91},{"idx":7,"group":"noai","pct":77.08},{"idx":7,"group":"light","pct":14.57},{"idx":7,"group":"subst","pct":8.35},{"idx":8,"group":"noai","pct":74.33},{"idx":8,"group":"light","pct":14.87},{"idx":8,"group":"subst","pct":10.8},{"idx":9,"group":"noai","pct":70.55},{"idx":9,"group":"light","pct":16.58},{"idx":9,"group":"subst","pct":12.87},{"idx":10,"group":"noai","pct":65.7},{"idx":10,"group":"light","pct":19.51},{"idx":10,"group":"subst","pct":14.78},{"idx":11,"group":"noai","pct":63.42},{"idx":11,"group":"light","pct":19.83},{"idx":11,"group":"subst","pct":16.75},{"idx":12,"group":"noai","pct":63.42},{"idx":12,"group":"light","pct":19.12},{"idx":12,"group":"subst","pct":17.46},{"idx":13,"group":"noai","pct":60.31},{"idx":13,"group":"light","pct":19.38},{"idx":13,"group":"subst","pct":20.32}],"n_quarters_a":14,"year_ticks_a":[{"idx":0,"label":"2023"},{"idx":4,"label":"2024"},{"idx":8,"label":"2025"},{"idx":12,"label":"2026"}],"fig2B":[{"idx":0,"group":"noai","pct":90.74},{"idx":0,"group":"light","pct":8.06},{"idx":0,"group":"subst","pct":1.2},{"idx":1,"group":"noai","pct":85.98},{"idx":1,"group":"light","pct":11.65},{"idx":1,"group":"subst","pct":2.37},{"idx":2,"group":"noai","pct":78.35},{"idx":2,"group":"light","pct":19.0},{"idx":2,"group":"subst","pct":2.65},{"idx":3,"group":"noai","pct":71.71},{"idx":3,"group":"light","pct":21.96},{"idx":3,"group":"subst","pct":6.32},{"idx":4,"group":"noai","pct":80.88},{"idx":4,"group":"light","pct":15.65},{"idx":4,"group":"subst","pct":3.46},{"idx":5,"group":"noai","pct":80.73},{"idx":5,"group":"light","pct":15.12},{"idx":5,"group":"subst","pct":4.15},{"idx":6,"group":"noai","pct":80.58},{"idx":6,"group":"light","pct":13.62},{"idx":6,"group":"subst","pct":5.81},{"idx":7,"group":"noai","pct":79.23},{"idx":7,"group":"light","pct":12.12},{"idx":7,"group":"subst","pct":8.65},{"idx":8,"group":"noai","pct":76.65},{"idx":8,"group":"light","pct":13.38},{"idx":8,"group":"subst","pct":9.96},{"idx":9,"group":"noai","pct":67.73},{"idx":9,"group":"light","pct":19.92},{"idx":9,"group":"subst","pct":12.35},{"idx":10,"group":"noai","pct":64.58},{"idx":10,"group":"light","pct":20.92},{"idx":10,"group":"subst","pct":14.5},{"idx":11,"group":"noai","pct":60.65},{"idx":11,"group":"light","pct":21.5},{"idx":11,"group":"subst","pct":17.85},{"idx":12,"group":"noai","pct":61.54},{"idx":12,"group":"light","pct":19.73},{"idx":12,"group":"subst","pct":18.73},{"idx":13,"group":"noai","pct":59.58},{"idx":13,"group":"light","pct":17.08},{"idx":13,"group":"subst","pct":23.35}],"n_quarters_b":14,"year_ticks_b":[{"idx":0,"label":"2023"},{"idx":4,"label":"2024"},{"idx":8,"label":"2025"},{"idx":12,"label":"2026"}],"fig2C":[{"genre":"General Romance","qi":0,"val":0.31},{"genre":"General Romance","qi":1,"val":1.85},{"genre":"General Romance","qi":2,"val":0.31},{"genre":"General Romance","qi":3,"val":4.57},{"genre":"General Romance","qi":4,"val":4.0},{"genre":"General Romance","qi":5,"val":4.92},{"genre":"General Romance","qi":6,"val":3.38},{"genre":"General Romance","qi":7,"val":6.46},{"genre":"General Romance","qi":8,"val":6.46},{"genre":"General Romance","qi":9,"val":5.85},{"genre":"General Romance","qi":10,"val":5.85},{"genre":"General Romance","qi":11,"val":16.31},{"genre":"General Romance","qi":12,"val":15.69},{"genre":"General Romance","qi":13,"val":17.85},{"genre":"Speculative Romance","qi":0,"val":0.0},{"genre":"Speculative Romance","qi":1,"val":0.0},{"genre":"Speculative Romance","qi":2,"val":0.0},{"genre":"Speculative Romance","qi":3,"val":2.57},{"genre":"Speculative Romance","qi":4,"val":0.92},{"genre":"Speculative Romance","qi":5,"val":0.31},{"genre":"Speculative Romance","qi":6,"val":4.62},{"genre":"Speculative Romance","qi":7,"val":9.23},{"genre":"Speculative Romance","qi":8,"val":11.69},{"genre":"Speculative Romance","qi":9,"val":13.23},{"genre":"Speculative Romance","qi":10,"val":13.23},{"genre":"Speculative Romance","qi":11,"val":19.38},{"genre":"Speculative Romance","qi":12,"val":20.31},{"genre":"Speculative Romance","qi":13,"val":14.15},{"genre":"Crime/Suspense Rom.","qi":0,"val":0.0},{"genre":"Crime/Suspense Rom.","qi":1,"val":2.15},{"genre":"Crime/Suspense Rom.","qi":2,"val":2.15},{"genre":"Crime/Suspense Rom.","qi":3,"val":10.29},{"genre":"Crime/Suspense Rom.","qi":4,"val":8.0},{"genre":"Crime/Suspense Rom.","qi":5,"val":12.31},{"genre":"Crime/Suspense Rom.","qi":6,"val":23.38},{"genre":"Crime/Suspense Rom.","qi":7,"val":18.15},{"genre":"Crime/Suspense Rom.","qi":8,"val":14.46},{"genre":"Crime/Suspense Rom.","qi":9,"val":19.69},{"genre":"Crime/Suspense Rom.","qi":10,"val":28.31},{"genre":"Crime/Suspense Rom.","qi":11,"val":28.0},{"genre":"Crime/Suspense Rom.","qi":12,"val":24.31},{"genre":"Crime/Suspense Rom.","qi":13,"val":25.23},{"genre":"Sports Romance","qi":0,"val":6.58},{"genre":"Sports Romance","qi":1,"val":3.76},{"genre":"Sports Romance","qi":2,"val":3.38},{"genre":"Sports Romance","qi":3,"val":5.71},{"genre":"Sports Romance","qi":4,"val":0.92},{"genre":"Sports Romance","qi":5,"val":2.46},{"genre":"Sports Romance","qi":6,"val":2.46},{"genre":"Sports Romance","qi":7,"val":4.0},{"genre":"Sports Romance","qi":8,"val":6.77},{"genre":"Sports Romance","qi":9,"val":17.23},{"genre":"Sports Romance","qi":10,"val":15.69},{"genre":"Sports Romance","qi":11,"val":20.31},{"genre":"Sports Romance","qi":12,"val":12.62},{"genre":"Sports Romance","qi":13,"val":17.54},{"genre":"Fantasy/Horror","qi":0,"val":1.23},{"genre":"Fantasy/Horror","qi":1,"val":0.0},{"genre":"Fantasy/Horror","qi":2,"val":0.62},{"genre":"Fantasy/Horror","qi":3,"val":10.29},{"genre":"Fantasy/Horror","qi":4,"val":2.46},{"genre":"Fantasy/Horror","qi":5,"val":0.31},{"genre":"Fantasy/Horror","qi":6,"val":4.92},{"genre":"Fantasy/Horror","qi":7,"val":7.69},{"genre":"Fantasy/Horror","qi":8,"val":8.0},{"genre":"Fantasy/Horror","qi":9,"val":8.31},{"genre":"Fantasy/Horror","qi":10,"val":5.23},{"genre":"Fantasy/Horror","qi":11,"val":4.92},{"genre":"Fantasy/Horror","qi":12,"val":5.85},{"genre":"Fantasy/Horror","qi":13,"val":21.85},{"genre":"Mystery/Thriller","qi":0,"val":3.38},{"genre":"Mystery/Thriller","qi":1,"val":0.31},{"genre":"Mystery/Thriller","qi":2,"val":3.69},{"genre":"Mystery/Thriller","qi":3,"val":5.71},{"genre":"Mystery/Thriller","qi":4,"val":5.23},{"genre":"Mystery/Thriller","qi":5,"val":8.62},{"genre":"Mystery/Thriller","qi":6,"val":3.38},{"genre":"Mystery/Thriller","qi":7,"val":1.54},{"genre":"Mystery/Thriller","qi":8,"val":8.62},{"genre":"Mystery/Thriller","qi":9,"val":11.08},{"genre":"Mystery/Thriller","qi":10,"val":22.15},{"genre":"Mystery/Thriller","qi":11,"val":20.0},{"genre":"Mystery/Thriller","qi":12,"val":33.54},{"genre":"Mystery/Thriller","qi":13,"val":33.23},{"genre":"Sci-Fi/Adventure","qi":0,"val":0.65},{"genre":"Sci-Fi/Adventure","qi":1,"val":10.46},{"genre":"Sci-Fi/Adventure","qi":2,"val":8.92},{"genre":"Sci-Fi/Adventure","qi":3,"val":7.43},{"genre":"Sci-Fi/Adventure","qi":4,"val":3.38},{"genre":"Sci-Fi/Adventure","qi":5,"val":2.15},{"genre":"Sci-Fi/Adventure","qi":6,"val":2.15},{"genre":"Sci-Fi/Adventure","qi":7,"val":8.62},{"genre":"Sci-Fi/Adventure","qi":8,"val":12.92},{"genre":"Sci-Fi/Adventure","qi":9,"val":15.38},{"genre":"Sci-Fi/Adventure","qi":10,"val":14.46},{"genre":"Sci-Fi/Adventure","qi":11,"val":15.08},{"genre":"Sci-Fi/Adventure","qi":12,"val":15.69},{"genre":"Sci-Fi/Adventure","qi":13,"val":39.38},{"genre":"Contemporary Fiction","qi":0,"val":0.0},{"genre":"Contemporary Fiction","qi":1,"val":0.92},{"genre":"Contemporary Fiction","qi":2,"val":2.15},{"genre":"Contemporary Fiction","qi":3,"val":4.0},{"genre":"Contemporary Fiction","qi":4,"val":2.77},{"genre":"Contemporary Fiction","qi":5,"val":2.15},{"genre":"Contemporary Fiction","qi":6,"val":2.15},{"genre":"Contemporary Fiction","qi":7,"val":13.54},{"genre":"Contemporary Fiction","qi":8,"val":10.77},{"genre":"Contemporary Fiction","qi":9,"val":8.0},{"genre":"Contemporary Fiction","qi":10,"val":11.08},{"genre":"Contemporary Fiction","qi":11,"val":18.77},{"genre":"Contemporary Fiction","qi":12,"val":21.85},{"genre":"Contemporary Fiction","qi":13,"val":17.54}],"n_quarters_c":14,"year_ticks_c":[{"idx":0,"label":"2023"},{"idx":4,"label":"2024"},{"idx":8,"label":"2025"},{"idx":12,"label":"2026"}],"genre_labels":{"Crime/Suspense Rom.":["Crime / Suspense","Romance"],"Sci-Fi/Adventure":["Sci-Fi /","Adventure / Dystopian"],"Mystery/Thriller":["Mystery /","Thriller / Crime"],"Speculative Romance":["Speculative /","Adventure Romance"],"General Romance":["General Romance"],"Contemporary Fiction":["General /","Contemporary Fiction"],"Fantasy/Horror":["Fantasy /","Supernatural / Horror"],"Sports Romance":["Sports Romance"]},"fig2D":[{"idx":0,"metric":"retention","pct":44.09},{"idx":0,"metric":"entrant","pct":3.28},{"idx":1,"metric":"retention","pct":40.43},{"idx":1,"metric":"entrant","pct":2.71},{"idx":2,"metric":"retention","pct":44.98},{"idx":2,"metric":"entrant","pct":10.75},{"idx":3,"metric":"retention","pct":32.09},{"idx":3,"metric":"entrant","pct":3.32},{"idx":4,"metric":"retention","pct":28.16},{"idx":4,"metric":"entrant","pct":6.83},{"idx":5,"metric":"retention","pct":38.27},{"idx":5,"metric":"entrant","pct":8.4},{"idx":6,"metric":"retention","pct":37.07},{"idx":6,"metric":"entrant","pct":14.84},{"idx":7,"metric":"retention","pct":37.59},{"idx":7,"metric":"entrant","pct":17.78},{"idx":8,"metric":"retention","pct":44.41},{"idx":8,"metric":"entrant","pct":12.62},{"idx":9,"metric":"retention","pct":52.69},{"idx":9,"metric":"entrant","pct":24.11},{"idx":10,"metric":"retention","pct":57.8},{"idx":10,"metric":"entrant","pct":28.66},{"idx":11,"metric":"retention","pct":52.45},{"idx":11,"metric":"entrant","pct":30.68},{"idx":12,"metric":"retention","pct":62.46},{"idx":12,"metric":"entrant","pct":31.7}],"n_quarters_d":13,"year_ticks_d":[{"idx":0,"label":"2023"},{"idx":3,"label":"2024"},{"idx":7,"label":"2025"},{"idx":11,"label":"2026"}]};
+
+const SVGNS = 'http://www.w3.org/2000/svg';
+// The figure is drawn in its original 1200-unit design grid, then scaled up onto
+// a 1400-wide canvas so its rendered scale (and font sizes) match Figure 1.
+const CANVAS_SCALE = 1400 / 1200;
+const svg = (function () {
+  const rootSvg = document.getElementById('figure');
+  const g = document.createElementNS(SVGNS, 'g');
+  g.setAttribute('transform', `scale(${CANVAS_SCALE})`);
+  rootSvg.appendChild(g);
+  return g;
+})();
+function el(tag, attrs = {}, parent = svg) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e);
+  return e;
+}
+function txt(x, y, text, attrs = {}, parent = svg) {
+  const t = el('text', { x, y, ...attrs }, parent);
+  t.textContent = text;
+  return t;
+}
+const scale = (d0, d1, r0, r1) => (v) => r0 + ((v - d0) / (d1 - d0)) * (r1 - r0);
+
+function heatColor(v, vmax) {
+  if (v === null || v === undefined) return COLORS.na;
+  const t = Math.max(0, Math.min(v / vmax, 1));
+  const [r0,g0,b0] = COLORS.heatLow;
+  const [r1,g1,b1] = COLORS.heatHigh;
+  const r = Math.round(r0 + (r1 - r0) * t);
+  const g = Math.round(g0 + (g1 - g0) * t);
+  const b = Math.round(b0 + (b1 - b0) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
+// (figure title removed)
+
+// =============================================================================
+// PANEL A: Monthly sales share trajectories  (top-left)
+// =============================================================================
+function renderPanelA() {
+  txt(15, 98, 'A.', { class: 'panel-letter' });
+  txt(45, 98, 'Books with AI text are winning a growing share of sales', { class: 'panel-title' });
+  txt(45, 117, 'Share of sales held by books in each AI-text band', { class: 'axis-label', fill: COLORS.textMuted });
+  const plotX = 100, plotY = 141, plotW = 470, plotH = 336;
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+  const xS = scale(0, DATA.n_quarters_a - 1, 14, plotW);
+  const yS = scale(0, 100, plotH, 0);
+  const yTicks = [0, 25, 50, 75, 100];
+  for (const t of yTicks) el('line', { x1: 0, x2: plotW, y1: yS(t), y2: yS(t), stroke: COLORS.gridline, 'stroke-width': 1 }, g);
+  for (const t of yTicks) txt(-8, yS(t) + 5, t + '%', { class: 'tick', 'text-anchor': 'end' }, g);
+  txt(-50, plotH / 2, 'Share of observed sales', { class: 'axis-label', 'text-anchor': 'middle', transform: `rotate(-90, -50, ${plotH / 2})` }, g);
+  el('line', { x1: 0, x2: plotW, y1: plotH, y2: plotH, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+  DATA.year_ticks_a.forEach(t => {
+    el('line', { x1: xS(t.idx), x2: xS(t.idx), y1: plotH, y2: plotH + 4, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+    txt(xS(t.idx), plotH + 22, t.label, { class: 'tick', 'text-anchor': 'middle' }, g);
+  });
+  const groups = ['noai', 'light', 'subst'];
+  for (const gr of groups) {
+    const pts = DATA.fig2A.filter(d => d.group === gr).sort((a, b) => a.idx - b.idx);
+    const dd = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xS(p.idx)} ${yS(p.pct)}`).join(' ');
+    el('path', { d: dd, fill: 'none', stroke: GROUP_COLOR[gr], 'stroke-width': 3.2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+  }
+  for (const gr of groups) DATA.fig2A.filter(d => d.group === gr).forEach(p => {
+    el('circle', { cx: xS(p.idx), cy: yS(p.pct), r: 4.6, fill: GROUP_COLOR[gr], stroke: '#ffffff', 'stroke-width': 1.6 }, g);
+  });
+  // Legend (no box), in clear mid-left space
+  const legX = 18, legY0 = 150, legRowH = 24, legSwatch = 30, legGap = 9;
+  groups.forEach((gr, i) => {
+    const ry = legY0 + i * legRowH;
+    el('line', { x1: legX, x2: legX + legSwatch, y1: ry, y2: ry, stroke: GROUP_COLOR[gr], 'stroke-width': 3.2, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: legX + legSwatch / 2, cy: ry, r: 4.6, fill: GROUP_COLOR[gr], stroke: '#ffffff', 'stroke-width': 1.6 }, g);
+    bandText(legX + legSwatch + legGap, ry + 5, gr, { class: 'legend' }, g);
+  });
+}
+
+// =============================================================================
+// PANEL B: Inverted stacked area, Top 25 slot composition  (top-right)
+// =============================================================================
+function renderPanelB() {
+  txt(615, 98, 'B.', { class: 'panel-letter' });
+  txt(645, 98, 'The top sellers increasingly include books with AI text', { class: 'panel-title' });
+  txt(645, 117, 'Composition of Top 25 sales-rank slots by AI-text band', { class: 'axis-label', fill: COLORS.textMuted });
+  const plotX = 670, plotY = 141, plotW = 470, plotH = 336;
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+  const groups = ['subst', 'light', 'noai'];
+  const xS = scale(0, DATA.n_quarters_b - 1, 0, plotW);
+  const yS = scale(0, 100, plotH, 0);
+  const yTicks = [0, 25, 50, 75, 100];
+  const byGroup = {};
+  for (const gr of groups) byGroup[gr] = DATA.fig2B.filter(d => d.group === gr).sort((a, b) => a.idx - b.idx);
+  const indices = byGroup[groups[0]].map(d => d.idx);
+  const cum = {}; for (const idx of indices) cum[idx] = {};
+  for (let gi = 0; gi < groups.length; gi++) { const gr = groups[gi]; byGroup[gr].forEach(d => { const prev = gi === 0 ? 0 : cum[d.idx][groups[gi - 1]]; cum[d.idx][gr] = prev + d.pct; }); }
+  for (let gi = 0; gi < groups.length; gi++) {
+    const gr = groups[gi];
+    const topEdge = byGroup[gr].map(d => `${xS(d.idx)},${yS(cum[d.idx][gr])}`);
+    const bottomEdge = [];
+    if (gi === 0) { bottomEdge.push(`${xS(indices[indices.length - 1])},${yS(0)}`); bottomEdge.push(`${xS(indices[0])},${yS(0)}`); }
+    else { const prev = groups[gi - 1]; byGroup[gr].slice().reverse().forEach(d => bottomEdge.push(`${xS(d.idx)},${yS(cum[d.idx][prev])}`)); }
+    el('polygon', { points: [...topEdge, ...bottomEdge].join(' '), fill: GROUP_COLOR[gr], 'fill-opacity': gr === 'noai' ? 0.18 : 0.9, stroke: 'none' }, g);
+  }
+  const lightTop = byGroup['light'].map((d, i) => `${i === 0 ? 'M' : 'L'} ${xS(d.idx)} ${yS(cum[d.idx]['light'])}`).join(' ');
+  el('path', { d: lightTop, fill: 'none', stroke: COLORS.human, 'stroke-width': 1.6, opacity: 0.5 }, g);
+  for (const t of yTicks) txt(-8, yS(t) + 5, t + '%', { class: 'tick', 'text-anchor': 'end' }, g);
+  txt(-50, plotH / 2, 'Share of Top 25 slots', { class: 'axis-label', 'text-anchor': 'middle', transform: `rotate(-90, -50, ${plotH / 2})` }, g);
+  el('line', { x1: 0, x2: plotW, y1: plotH, y2: plotH, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+  DATA.year_ticks_b.forEach(t => { el('line', { x1: xS(t.idx), x2: xS(t.idx), y1: plotH, y2: plotH + 4, stroke: COLORS.axis, 'stroke-width': 1 }, g); txt(xS(t.idx), plotH + 22, t.label, { class: 'tick', 'text-anchor': 'middle' }, g); });
+  const lastIdx = indices[indices.length - 1]; const cL = cum[lastIdx];
+  const substMid = cL['subst'] * 0.36;   // bias below center of orange band so label clears the orange/blue boundary
+  const lightMid = cL['subst'] + (cL['light'] - cL['subst']) / 2;
+  const noaiMid  = cL['light'] + (cL['noai']  - cL['light'])  / 2;
+  const labelX = plotW - 12;
+  bandText(labelX, yS(noaiMid)  + 5, 'noai',  { class: 'direct-label', fill: COLORS.human, 'text-anchor': 'end' }, g);
+  bandText(labelX, yS(lightMid) + 5, 'light', { class: 'direct-label', fill: '#ffffff', 'text-anchor': 'end' }, g);
+  bandText(labelX, yS(substMid) + 5, 'subst', { class: 'direct-label', fill: '#1a1a1a', 'text-anchor': 'end' }, g);
+}
+
+// =============================================================================
+// PANEL C: Heatmap with horizontal color bar  (bottom-left)
+// =============================================================================
+const GENRE_ORDER_C = ["Crime/Suspense Rom.", "Sci-Fi/Adventure", "Mystery/Thriller", "Speculative Romance", "General Romance", "Contemporary Fiction", "Fantasy/Horror", "Sports Romance"];
+
+function renderPanelC() {
+  txt(15, 560, 'C.', { class: 'panel-letter' });
+  txt(45, 560, 'Books with substantial AI text are reaching the top in every genre', { class: 'panel-title' });
+  txt(45, 579, "Share of each genre's Top 25 slots held by books with substantial AI text", { class: 'axis-label', fill: COLORS.textMuted });
+  const plotX = 205, plotY = 603;
+  const heatW = 360, cellW = heatW / DATA.n_quarters_c, cellH = 42;
+  const heatH = cellH * GENRE_ORDER_C.length;
+  const rowOf = {}; GENRE_ORDER_C.forEach((g, i) => { rowOf[g] = i; });
+  const VMAX = 40;
+  DATA.fig2C.forEach(c => {
+    const gi = rowOf[c.genre]; if (gi === undefined) return;
+    const x = plotX + c.qi * cellW, y = plotY + gi * cellH;
+    el('rect', { x, y, width: cellW, height: cellH, fill: heatColor(c.val, VMAX), stroke: '#ffffff', 'stroke-width': 2 });
+  });
+  GENRE_ORDER_C.forEach((genre, gi) => {
+    const labelLines = DATA.genre_labels[genre] || [genre];
+    const cy = plotY + gi * cellH + cellH / 2, lh = 14;
+    const topY = cy - ((labelLines.length - 1) * lh) / 2 + 4;
+    const tEl = el('text', { x: plotX - 12, y: topY, class: 'heatmap-row-label', 'text-anchor': 'end' });
+    labelLines.forEach((line, li) => {
+      const ts = document.createElementNS(SVGNS, 'tspan');
+      ts.setAttribute('x', plotX - 12);
+      if (li > 0) ts.setAttribute('dy', lh);
+      ts.textContent = line; tEl.appendChild(ts);
+    });
+  });
+  // Year labels at the Q1 column of each year (columns 0,4,8,12), centered on that
+  // column, matching the Q1 time anchor used by panels A, B, and D. Equal 4-column spacing.
+  const yearLabelY = plotY + heatH + 22;
+  [['2023', 0], ['2024', 4], ['2025', 8], ['2026', 12]].forEach(([label, col]) => {
+    const x = plotX + (col + 0.5) * cellW;
+    el('line', { x1: x, x2: x, y1: plotY + heatH, y2: plotY + heatH + 4, stroke: COLORS.axis, 'stroke-width': 1 });
+    txt(x, yearLabelY, label, { class: 'tick', 'text-anchor': 'middle' });
+  });
+  const cbX = plotX, cbY = plotY + heatH + 45, cbW = heatW, cbH = 16;
+  el('rect', { x: cbX, y: cbY, width: cbW, height: cbH, fill: 'url(#colorbar-grad)', stroke: '#bbbbbb', 'stroke-width': 0.6 });
+  const cbXS = scale(0, VMAX, cbX, cbX + cbW);
+  [0, 10, 20, 30, 40].forEach(v => {
+    const x = cbXS(v);
+    el('line', { x1: x, x2: x, y1: cbY + cbH, y2: cbY + cbH + 4, stroke: '#888', 'stroke-width': 1 });
+    txt(x, cbY + cbH + 18, v + '%', { class: 'tick', 'text-anchor': 'middle', 'font-size': 11.143 });
+  });
+  txt(cbX + cbW / 2, cbY + cbH + 38, 'Books with Substantial AI text (>25%) share of Top 25 slots', { class: 'colorbar-title', 'text-anchor': 'middle' });
+}
+
+// =============================================================================
+// PANEL D: Top-rank churn lines  (bottom-right)
+// =============================================================================
+function renderPanelD() {
+  txt(615, 560, 'D.', { class: 'panel-letter' });
+  txt(645, 560, 'New books with substantial AI text are entering the bestseller lists', { class: 'panel-title' });
+  txt(645, 579, 'Each quarter, fewer bestsellers stay on the list and more entrants carry substantial AI text', { class: 'axis-label', fill: COLORS.textMuted });
+  const plotX = 670, plotY = 603, plotW = 470, plotH = 336;
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+  const xS = scale(0, DATA.n_quarters_d - 1, 0, plotW);
+  const yS = scale(0, 100, plotH, 0);
+  const yTicks = [0, 25, 50, 75, 100];
+  for (const t of yTicks) el('line', { x1: 0, x2: plotW, y1: yS(t), y2: yS(t), stroke: COLORS.gridline, 'stroke-width': 1 }, g);
+  for (const t of yTicks) txt(-8, yS(t) + 5, t + '%', { class: 'tick', 'text-anchor': 'end' }, g);
+  txt(-50, plotH / 2, 'Share within Top-25 group', { class: 'axis-label', 'text-anchor': 'middle', transform: `rotate(-90, -50, ${plotH / 2})` }, g);
+  el('line', { x1: 0, x2: plotW, y1: plotH, y2: plotH, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+  DATA.year_ticks_d.forEach(t => { el('line', { x1: xS(t.idx), x2: xS(t.idx), y1: plotH, y2: plotH + 4, stroke: COLORS.axis, 'stroke-width': 1 }, g); txt(xS(t.idx), plotH + 22, t.label, { class: 'tick', 'text-anchor': 'middle' }, g); });
+  const metrics = [
+    { name: 'retention', label: 'Bestsellers with no AI text retained from previous quarter', color: COLORS.human },
+    { name: 'entrant', label: 'New Top-25 entrants with substantial AI text', color: COLORS.aiMajority },
+  ];
+  metrics.forEach(m => {
+    const pts = DATA.fig2D.filter(d => d.metric === m.name).sort((a, b) => a.idx - b.idx);
+    const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xS(p.idx)} ${yS(p.pct)}`).join(' ');
+    el('path', { d: path, fill: 'none', stroke: m.color, 'stroke-width': 3.2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+  });
+  metrics.forEach(m => DATA.fig2D.filter(d => d.metric === m.name).forEach(p => el('circle', { cx: xS(p.idx), cy: yS(p.pct), r: 4.6, fill: m.color, stroke: '#ffffff', 'stroke-width': 1.6 }, g)));
+  // Legend (no box) top area
+  const legSwatch = 30, legGap = 9, legRowH = 24, legTextW = 268;
+  const legLeft = plotW - 4 - (legSwatch + legGap + legTextW), legTop = 10;
+  metrics.forEach((m, i) => {
+    const ry = legTop + 6 + i * legRowH, sx = legLeft;
+    el('line', { x1: sx, x2: sx + legSwatch, y1: ry, y2: ry, stroke: m.color, 'stroke-width': 3.2, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: sx + legSwatch / 2, cy: ry, r: 4.6, fill: m.color, stroke: '#ffffff', 'stroke-width': 1.6 }, g);
+    txt(sx + legSwatch + legGap, ry + 5, m.label, { class: 'legend' }, g);
+  });
+}
+
+renderPanelA();
+renderPanelB();
+renderPanelC();
+renderPanelD();
+</script>
+</body>
+</html>
