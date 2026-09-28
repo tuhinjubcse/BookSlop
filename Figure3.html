@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Figure 3</title>
+<style>
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #ffffff;
+    font-family: Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #1a1a1a;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  svg { width: 100%; height: auto; display: block; }
+  /* Font sizes are authored in the 1200-unit design grid; the figure is scaled
+     x7/6 onto the 1400 canvas, so these render at 24/20/16/14/15 to match Figure 2. */
+  .panel-letter { font-size: 20.571px; font-weight: bold; fill: #333; }
+  .panel-title  { font-size: 17.143px; fill: #333; }
+  .panel-subtitle { font-size: 13.714px; fill: #333; }
+  .axis-label { font-size: 13.714px; fill: #333; }
+  .tick { font-size: 12px; fill: #555; }
+  .legend { font-size: 12.857px; fill: #333; }
+  .direct-label { font-size: 12.857px; font-weight: 600; }
+  .pct-label { font-size: 12.857px; font-weight: 700; }
+  .genre-label { font-size: 12.857px; font-weight: 600; fill: #333; }
+  .annotation { font-size: 10.286px; font-style: italic; fill: #666666; }
+</style>
+</head>
+<body>
+<div class="container">
+  <svg id="figure" viewBox="0 0 1400 1260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1400" height="1260" fill="white"/>
+  </svg>
+</div>
+
+<script>
+const VIEW_W = 1200;
+
+const COLORS = {
+  released:   '#404040',
+  selling:    '#2166ac',
+  revenue:    '#E07B39',
+  sales:      '#999999',
+  human:      '#404040',
+  aiAssisted: '#2166ac',
+  aiMajority: '#E07B39',
+  early:      '#ffffff',  // open circle fill (2023)
+  earlyStroke:'#444444',  // open circle outline
+  late:       '#444444',  // filled circle (2025)
+  pctLabel:   '#444444',  // percent label color
+  connector:  '#bbbbbb',
+  refLine:    '#888888',
+  gridline:   '#e0e0e0',
+  axis:       '#888888',
+  textMuted:  '#666666',
+};
+
+const DATA = {"fig3A":[{"idx":0,"released":1.0,"selling":1.0,"sales":1.0,"revenue":1.0},{"idx":1,"released":2.117,"selling":1.713,"sales":1.906,"revenue":2.001},{"idx":2,"released":3.231,"selling":2.632,"sales":2.6,"revenue":2.76},{"idx":3,"released":4.644,"selling":4.487,"sales":4.188,"revenue":4.502},{"idx":4,"released":9.088,"selling":7.006,"sales":6.972,"revenue":7.931},{"idx":5,"released":13.604,"selling":9.36,"sales":9.784,"revenue":11.331},{"idx":6,"released":17.638,"selling":11.465,"sales":11.262,"revenue":13.046},{"idx":7,"released":22.181,"selling":13.544,"sales":13.093,"revenue":15.054},{"idx":8,"released":26.104,"selling":15.551,"sales":13.875,"revenue":16.189},{"idx":9,"released":29.864,"selling":17.056,"sales":12.334,"revenue":14.602},{"idx":10,"released":32.973,"selling":18.349,"sales":8.236,"revenue":9.89},{"idx":11,"released":35.082,"selling":18.575,"sales":7.011,"revenue":8.555},{"idx":12,"released":38.348,"selling":19.214,"sales":7.298,"revenue":8.913}],"fig3B":[{"idx":0,"group":"noai","rev":20051,"n":340,"label":"2023 Q1"},{"idx":0,"group":"light","rev":7856,"n":31,"label":"2023 Q1"},{"idx":0,"group":"subst","rev":1690,"n":3,"label":"2023 Q1"},{"idx":1,"group":"noai","rev":20094,"n":297,"label":"2023 Q2"},{"idx":1,"group":"light","rev":18348,"n":90,"label":"2023 Q2"},{"idx":1,"group":"subst","rev":5339,"n":33,"label":"2023 Q2"},{"idx":2,"group":"noai","rev":32832,"n":245,"label":"2023 Q3"},{"idx":2,"group":"light","rev":20191,"n":116,"label":"2023 Q3"},{"idx":2,"group":"subst","rev":6567,"n":58,"label":"2023 Q3"},{"idx":3,"group":"noai","rev":24721,"n":273,"label":"2023 Q4"},{"idx":3,"group":"light","rev":15188,"n":133,"label":"2023 Q4"},{"idx":3,"group":"subst","rev":5622,"n":124,"label":"2023 Q4"},{"idx":4,"group":"noai","rev":22795,"n":1299,"label":"2024 Q1"},{"idx":4,"group":"light","rev":19505,"n":223,"label":"2024 Q1"},{"idx":4,"group":"subst","rev":8158,"n":146,"label":"2024 Q1"},{"idx":5,"group":"noai","rev":24675,"n":1269,"label":"2024 Q2"},{"idx":5,"group":"light","rev":21721,"n":260,"label":"2024 Q2"},{"idx":5,"group":"subst","rev":9708,"n":163,"label":"2024 Q2"},{"idx":6,"group":"noai","rev":27702,"n":1069,"label":"2024 Q3"},{"idx":6,"group":"light","rev":17164,"n":239,"label":"2024 Q3"},{"idx":6,"group":"subst","rev":9603,"n":206,"label":"2024 Q3"},{"idx":7,"group":"noai","rev":22520,"n":1168,"label":"2024 Q4"},{"idx":7,"group":"light","rev":22176,"n":237,"label":"2024 Q4"},{"idx":7,"group":"subst","rev":14380,"n":303,"label":"2024 Q4"},{"idx":8,"group":"noai","rev":24918,"n":921,"label":"2025 Q1"},{"idx":8,"group":"light","rev":20357,"n":225,"label":"2025 Q1"},{"idx":8,"group":"subst","rev":18926,"n":328,"label":"2025 Q1"},{"idx":9,"group":"noai","rev":19998,"n":753,"label":"2025 Q2"},{"idx":9,"group":"light","rev":22109,"n":267,"label":"2025 Q2"},{"idx":9,"group":"subst","rev":11137,"n":388,"label":"2025 Q2"},{"idx":10,"group":"noai","rev":13749,"n":581,"label":"2025 Q3"},{"idx":10,"group":"light","rev":16778,"n":219,"label":"2025 Q3"},{"idx":10,"group":"subst","rev":7730,"n":369,"label":"2025 Q3"},{"idx":11,"group":"noai","rev":15158,"n":324,"label":"2025 Q4"},{"idx":11,"group":"light","rev":16154,"n":161,"label":"2025 Q4"},{"idx":11,"group":"subst","rev":8803,"n":296,"label":"2025 Q4"},{"idx":12,"group":"noai","rev":15524,"n":507,"label":"2026 Q1"},{"idx":12,"group":"light","rev":11590,"n":269,"label":"2026 Q1"},{"idx":12,"group":"subst","rev":11487,"n":452,"label":"2026 Q1"}],"fig3C":[{"genre":"General Romance","scope":"Overall","early":20546,"late":18235,"pct_label":"-11%","pct_change":-11.2,"genre_label":"General Romance","y_pos":6.18},{"genre":"Speculative / Adventure Romance","scope":"Overall","early":15999,"late":11920,"pct_label":"-26%","pct_change":-25.5,"genre_label":"Speculative /\nAdventure Romance","y_pos":1.18},{"genre":"Crime / Suspense Romance","scope":"Overall","early":29360,"late":21982,"pct_label":"-25%","pct_change":-25.1,"genre_label":"Crime / Suspense\nRomance","y_pos":7.18},{"genre":"Sports Romance","scope":"Overall","early":45983,"late":23169,"pct_label":"-50%","pct_change":-49.6,"genre_label":"Sports Romance","y_pos":8.18},{"genre":"Fantasy / Supernatural / Horror","scope":"Overall","early":13258,"late":16019,"pct_label":"+21%","pct_change":20.8,"genre_label":"Fantasy /\nSupernatural / Horror","y_pos":3.18},{"genre":"Mystery / Thriller / Crime","scope":"Overall","early":15265,"late":11180,"pct_label":"-27%","pct_change":-26.8,"genre_label":"Mystery /\nThriller / Crime","y_pos":2.18},{"genre":"Science Fiction / Adventure / Dystopian","scope":"Overall","early":17226,"late":17934,"pct_label":"+4%","pct_change":4.1,"genre_label":"Sci-Fi /\nAdventure / Dystopian","y_pos":4.18},{"genre":"General / Contemporary Fiction","scope":"Overall","early":28239,"late":21123,"pct_label":"-25%","pct_change":-25.2,"genre_label":"General /\nContemporary Fiction","y_pos":5.18},{"genre":"General Romance","scope":"No AI text","early":24400,"late":22407,"pct_label":"-8%","pct_change":-8.2,"genre_label":"General Romance","y_pos":5.82},{"genre":"Speculative / Adventure Romance","scope":"No AI text","early":18694,"late":11970,"pct_label":"-36%","pct_change":-36.0,"genre_label":"Speculative /\nAdventure Romance","y_pos":0.8200000000000001},{"genre":"Crime / Suspense Romance","scope":"No AI text","early":35514,"late":22989,"pct_label":"-35%","pct_change":-35.3,"genre_label":"Crime / Suspense\nRomance","y_pos":6.82},{"genre":"Sports Romance","scope":"No AI text","early":33618,"late":27081,"pct_label":"-19%","pct_change":-19.4,"genre_label":"Sports Romance","y_pos":7.82},{"genre":"Fantasy / Supernatural / Horror","scope":"No AI text","early":14128,"late":19098,"pct_label":"+35%","pct_change":35.2,"genre_label":"Fantasy /\nSupernatural / Horror","y_pos":2.82},{"genre":"Mystery / Thriller / Crime","scope":"No AI text","early":20079,"late":12638,"pct_label":"-37%","pct_change":-37.1,"genre_label":"Mystery /\nThriller / Crime","y_pos":1.82},{"genre":"Science Fiction / Adventure / Dystopian","scope":"No AI text","early":20699,"late":19826,"pct_label":"-4%","pct_change":-4.2,"genre_label":"Sci-Fi /\nAdventure / Dystopian","y_pos":3.82},{"genre":"General / Contemporary Fiction","scope":"No AI text","early":35349,"late":22052,"pct_label":"-38%","pct_change":-37.6,"genre_label":"General /\nContemporary Fiction","y_pos":4.82}],"genre_order":["Sports Romance","Crime / Suspense Romance","General Romance","General / Contemporary Fiction","Science Fiction / Adventure / Dystopian","Fantasy / Supernatural / Horror","Mystery / Thriller / Crime","Speculative / Adventure Romance"],"n_quarters":13,"n_quarters_b":13,"year_ticks_a":[{"idx":0,"label":"2023"},{"idx":4,"label":"2024"},{"idx":8,"label":"2025"},{"idx":12,"label":"2026"}],"year_ticks_b":[{"idx":0,"label":"2023"},{"idx":4,"label":"2024"},{"idx":8,"label":"2025"},{"idx":12,"label":"2026"}],"max_n_b":1299,"max_rev_b":32832.0};
+const SVGNS = 'http://www.w3.org/2000/svg';
+// The figure is drawn in its original 1200-unit design grid, then scaled up onto
+// a 1400-wide canvas so its rendered scale (and font sizes) match Figures 1 and 2.
+const CANVAS_SCALE = 1400 / 1200;
+const svg = (function () {
+  const rootSvg = document.getElementById('figure');
+  const g = document.createElementNS(SVGNS, 'g');
+  g.setAttribute('transform', `scale(${CANVAS_SCALE})`);
+  rootSvg.appendChild(g);
+  return g;
+})();
+function el(tag, attrs = {}, parent = svg) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e);
+  return e;
+}
+function txt(x, y, text, attrs = {}, parent = svg) {
+  const t = el('text', { x, y, ...attrs }, parent);
+  t.textContent = text;
+  return t;
+}
+const scale = (d0, d1, r0, r1) => (v) => r0 + ((v - d0) / (d1 - d0)) * (r1 - r0);
+
+function fmtCurrency(v) {
+  if (v === 0) return '$0';
+  if (Math.abs(v) >= 1000) return `$${Math.round(v / 1000)}K`;
+  return `$${v}`;
+}
+
+// =============================================================================
+// PANEL A: Calendar-market accounting (top-left)
+// =============================================================================
+function renderPanelA() {
+  // Header (two lines)
+  txt(15, 120, 'A.', { class: 'panel-letter' });
+  txt(45, 120, 'New books appear far faster than sales or revenue rise', { class: 'panel-title' });
+  txt(45, 144, 'Quarterly books, sales, and revenue relative to 2023', { class: 'panel-subtitle' });
+
+  const plotX = 70, plotY = 180, plotW = 345, plotH = 260;
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+
+  const xS = scale(0, DATA.n_quarters - 1, 0, plotW);
+  const yS = scale(0, 40, plotH, 0);
+  const yTicks = [0, 10, 20, 30, 40];
+
+  for (const t of yTicks) {
+    el('line', { x1: 0, x2: plotW, y1: yS(t), y2: yS(t), stroke: COLORS.gridline, 'stroke-width': 1 }, g);
+  }
+
+  for (const t of yTicks) {
+    txt(-10, yS(t) + 5, t + '×', { class: 'tick', 'text-anchor': 'end' }, g);
+  }
+  txt(-50, plotH / 2, 'Multiple of 2023Q1 level', {
+    class: 'axis-label', 'text-anchor': 'middle',
+    transform: `rotate(-90, -50, ${plotH / 2})`
+  }, g);
+
+  el('line', { x1: 0, x2: plotW, y1: plotH, y2: plotH, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+  DATA.year_ticks_a.forEach(t => {
+    el('line', { x1: xS(t.idx), x2: xS(t.idx), y1: plotH, y2: plotH + 4, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+    txt(xS(t.idx), plotH + 22, t.label, { class: 'tick', 'text-anchor': 'middle' }, g);
+  });
+
+  // Draw lines
+  const points = DATA.fig3A;
+  const lines = [
+    { key: 'sales',    color: COLORS.sales,    width: 2.4, name: 'Sales' },
+    { key: 'revenue',  color: COLORS.revenue,  width: 2.6, name: 'Revenue' },
+    { key: 'selling',  color: COLORS.selling,  width: 2.6, name: 'Selling books' },
+    { key: 'released', color: COLORS.released, width: 2.8, name: 'Released books (cumulative)' },
+  ];
+  lines.forEach(L => {
+    const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xS(p.idx)} ${yS(p[L.key])}`).join(' ');
+    el('path', { d: path, fill: 'none', stroke: L.color, 'stroke-width': L.width,
+                 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, g);
+    points.forEach(p => {
+      el('circle', { cx: xS(p.idx), cy: yS(p[L.key]), r: 3.5, fill: L.color, stroke: '#ffffff', 'stroke-width': 1.0 }, g);
+    });
+  });
+
+  // Direct end labels (right of plot, no bottom legend)
+  // Compute label y-positions, handling collision between Revenue and Sales
+  const last = points[points.length - 1];
+  const labels = [
+    { key: 'released', name: 'Released books (cumulative)', val: last.released, color: COLORS.released },
+    { key: 'selling',  name: 'Selling books',   val: last.selling,  color: COLORS.selling },
+    { key: 'revenue',  name: 'Revenue',         val: last.revenue,  color: COLORS.revenue },
+    { key: 'sales',    name: 'Sales',           val: last.sales,    color: COLORS.sales },
+  ];
+  function drawDirectLabel(x, y, name, val, color, parent) {
+    const t = el('text', {
+      x,
+      y,
+      class: 'direct-label',
+      fill: color
+    }, parent);
+
+    const lines = name === 'Released books (cumulative)'
+      ? ['Released books', `(cumulative) ${val.toFixed(1)}×`]
+      : [`${name} ${val.toFixed(1)}×`];
+
+    lines.forEach((line, i) => {
+      const ts = document.createElementNS(SVGNS, 'tspan');
+      ts.setAttribute('x', x);
+      if (i > 0) ts.setAttribute('dy', '15');
+      ts.textContent = line;
+      t.appendChild(ts);
+    });
+  }
+  
+  // Native y positions
+  labels.forEach(L => { L.dotY = yS(L.val); L.labelY = L.dotY; });
+  // Resolve collision: Revenue and Sales are close. Push revenue up, sales down.
+  const revLabel = labels.find(l => l.key === 'revenue');
+  const salesLabel = labels.find(l => l.key === 'sales');
+  if (Math.abs(revLabel.labelY - salesLabel.labelY) < 18) {
+    const mid = (revLabel.labelY + salesLabel.labelY) / 2;
+    revLabel.labelY = mid - 11;
+    salesLabel.labelY = mid + 11;
+  }
+  const endX = xS(last.idx);
+  labels.forEach(L => {
+    // Dot at actual endpoint
+    el('circle', { cx: endX, cy: L.dotY, r: 3.5, fill: L.color, stroke: '#ffffff', 'stroke-width': 1.2 }, g);
+    // Leader line if label offset from dot
+    if (Math.abs(L.labelY - L.dotY) > 4) {
+      el('line', { x1: endX + 5, x2: endX + 14, y1: L.dotY, y2: L.labelY,
+                   stroke: L.color, 'stroke-width': 0.8, opacity: 0.5 }, g);
+    }
+    drawDirectLabel(
+      endX + 18,
+      L.key === 'released' ? L.labelY - 4 : L.labelY + 5,
+      L.name,
+      L.val,
+      L.color,
+      g
+    );
+  });
+}
+
+// =============================================================================
+// PANEL B: 13-week launch revenue by group (top-right)
+// =============================================================================
+function renderPanelB() {
+  // Header (two lines)
+  txt(615, 120, 'B.', { class: 'panel-letter' });
+  txt(645, 120, 'Books with no AI text still earn the most, but their lead is shrinking', { class: 'panel-title' });
+  txt(645, 144, 'Revenue per book in the launch window, by release cohort and AI-text band', { class: 'panel-subtitle' });
+
+  const plotX = 670, plotY = 180, plotW = 490, plotH = 260;
+  const g = el('g', { transform: `translate(${plotX},${plotY})` });
+
+  const xS = scale(0, DATA.n_quarters_b - 1, 0, plotW);
+  const yMax = 40000;
+  const yS = scale(0, yMax, plotH, 0);
+  const yTicks = [0, 10000, 20000, 30000, 40000];
+
+  for (const t of yTicks) {
+    el('line', { x1: 0, x2: plotW, y1: yS(t), y2: yS(t), stroke: COLORS.gridline, 'stroke-width': 1 }, g);
+  }
+  for (const t of yTicks) {
+    txt(-10, yS(t) + 5, fmtCurrency(t), { class: 'tick', 'text-anchor': 'end' }, g);
+  }
+  const bAxisLabel = el('text', {
+    x: -58,
+    y: plotH / 2 - 8,
+    class: 'axis-label',
+    'text-anchor': 'middle',
+    transform: `rotate(-90, -58, ${plotH / 2})`
+  }, g);
+  let bAxisLine = document.createElementNS(SVGNS, 'tspan');
+  bAxisLine.setAttribute('x', -58);
+  bAxisLine.textContent = 'Launch-window revenue per book';
+  bAxisLabel.appendChild(bAxisLine);
+  bAxisLine = document.createElementNS(SVGNS, 'tspan');
+  bAxisLine.setAttribute('x', -58);
+  bAxisLine.setAttribute('dy', '16');
+  bAxisLine.textContent = '(pre-sales + 90 days post-release)';
+  bAxisLabel.appendChild(bAxisLine);
+
+  el('line', { x1: 0, x2: plotW, y1: plotH, y2: plotH, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+  DATA.year_ticks_b.forEach(t => {
+    el('line', { x1: xS(t.idx), x2: xS(t.idx), y1: plotH, y2: plotH + 4, stroke: COLORS.axis, 'stroke-width': 1 }, g);
+    txt(xS(t.idx), plotH + 22, t.label, { class: 'tick', 'text-anchor': 'middle' }, g);
+  });
+
+  // Marker AREA encodes the cohort count (area linear in log-count), so the disk
+  // area — what the eye actually reads — tracks the number of books.
+  const maxN = DATA.max_n_b;
+  const R_MIN = 2.5, R_MAX = 6.0;
+  function pointR(n) {
+    if (n <= 0) return R_MIN;
+    const t = Math.log(n + 1) / Math.log(maxN + 1);   // 0..1 on a log scale
+    return Math.sqrt(R_MIN * R_MIN + t * (R_MAX * R_MAX - R_MIN * R_MIN));
+  }
+
+  const groups = ['noai', 'light', 'subst'];
+  const colorOf = { noai: COLORS.human, light: COLORS.aiAssisted, subst: COLORS.aiMajority };
+  const BAND_DISPLAY = { noai: 'No AI text', light: 'Light AI text (\u226425%)', subst: 'Substantial AI text (>25%)' };
+
+  // Lines + count-sized markers per band
+  groups.forEach(grp => {
+    const pts = DATA.fig3B.filter(d => d.group === grp).sort((a, b) => a.idx - b.idx);
+    if (pts.length === 0) return;
+    const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${xS(p.idx)} ${yS(p.rev)}`).join(' ');
+    el('path', { d: path, fill: 'none', stroke: colorOf[grp], 'stroke-width': 2.2,
+                 'stroke-linejoin': 'round', 'stroke-linecap': 'round', opacity: 0.85 }, g);
+    pts.forEach(p => {
+      el('circle', { cx: xS(p.idx), cy: yS(p.rev), r: pointR(p.n),
+        fill: colorOf[grp], stroke: '#ffffff', 'stroke-width': 1.2, opacity: 0.9 }, g);
+    });
+  });
+
+  // Band legend (no box), top-right corner of the plot, left-aligned as a block
+  const legRowH = 15, legLine = 22, legTextGap = 7;
+  const legY0 = 6;
+  // widest label sets the block width so the whole legend is left-aligned inside a right-anchored box
+  const widestLabel = Math.max(...groups.map(grp => BAND_DISPLAY[grp].length)) * 6.6;
+  const legBlockW = legLine + legTextGap + widestLabel;
+  const legStartX = plotW - legBlockW - 4;             // left edge of the legend block
+  groups.forEach((grp, i) => {
+    const ry = legY0 + i * legRowH;
+    el('line', { x1: legStartX, x2: legStartX + legLine, y1: ry, y2: ry, stroke: colorOf[grp], 'stroke-width': 2.6, 'stroke-linecap': 'round' }, g);
+    el('circle', { cx: legStartX + legLine / 2, cy: ry, r: 3.4, fill: colorOf[grp], stroke: '#ffffff', 'stroke-width': 1.2 }, g);
+    txt(legStartX + legLine + legTextGap, ry + 4, BAND_DISPLAY[grp], { class: 'legend', 'text-anchor': 'start' }, g);
+  });
+
+  // Size legend: reference markers drawn with the same area encoding as the data
+  txt(0, plotH + 42, 'Marker area: number of books per cohort (log scale)',
+      { class: 'annotation', 'text-anchor': 'start' }, g);
+  const legCounts = [50, 300, 1000];
+  const legCx = [18, 84, 156];
+  const legCy = plotH + 64;
+  legCounts.forEach((c, i) => {
+    el('circle', { cx: legCx[i], cy: legCy, r: pointR(c), fill: '#aaaaaa', stroke: '#ffffff', 'stroke-width': 1 }, g);
+    txt(legCx[i], legCy + R_MAX + 13, c.toLocaleString(), { class: 'tick', 'text-anchor': 'middle' }, g);
+  });
+}
+
+// =============================================================================
+// PANEL C: Overall genre dumbbell (bottom-left)
+// =============================================================================
+function renderDumbbellPanel(opts) {
+  const { headerX, headerY, letter, title, subtitleY, subtitle,
+          labelRightX, plotX, plotY, plotW, plotH,
+          scope, showLegend } = opts;
+
+  txt(headerX, headerY, letter, { class: 'panel-letter' });
+  txt(headerX + 30, headerY, title, { class: 'panel-title' });
+  txt(headerX + 30, subtitleY, subtitle, { class: 'panel-subtitle' });
+
+  const rowH = plotH / DATA.genre_order.length;
+  const xDomainMax = 50000;
+  const xTicks = [0, 10000, 20000, 30000, 40000, 50000];
+  const xS = scale(0, xDomainMax, plotX, plotX + plotW);
+
+  // Vertical gridlines
+  for (const t of xTicks) {
+    el('line', { x1: xS(t), x2: xS(t), y1: plotY, y2: plotY + plotH,
+                 stroke: COLORS.gridline, 'stroke-width': 1 });
+  }
+
+  // Year encoding legend (top-left inside plot area)
+  if (showLegend) {
+    const lgY = plotY - 13;
+    el('circle', { cx: plotX + 8, cy: lgY, r: 5, fill: COLORS.early, stroke: COLORS.earlyStroke, 'stroke-width': 1.8 });
+    txt(plotX + 20, lgY + 5, '2023 cohort', { class: 'legend' });
+    el('circle', { cx: plotX + 130, cy: lgY, r: 5, fill: COLORS.late });
+    txt(plotX + 142, lgY + 5, '2025 cohort', { class: 'legend' });
+  }
+
+  // Dumbbells
+  DATA.genre_order.forEach((genre, gi) => {
+    const d = DATA.fig3C.find(r => r.genre === genre && r.scope === scope);
+    if (!d) return;
+    const y = plotY + gi * rowH + rowH / 2;
+    const xEarly = xS(d.early);
+    const xLate  = xS(d.late);
+
+    // Connector line
+    el('line', { x1: xEarly, x2: xLate, y1: y, y2: y,
+                 stroke: COLORS.connector, 'stroke-width': 4, 'stroke-linecap': 'round' });
+    // Early: open circle (2023)
+    el('circle', { cx: xEarly, cy: y, r: 6, fill: COLORS.early, stroke: COLORS.earlyStroke, 'stroke-width': 1.8 });
+    // Late: filled circle (2025)
+    el('circle', { cx: xLate,  cy: y, r: 6, fill: COLORS.late });
+
+    // Percent label (outside the dumbbell direction)
+    const isDecline = d.pct_change < 0;
+    const labelOffset = isDecline ? -10 : 10;
+    const anchor = isDecline ? 'end' : 'start';
+    txt(xLate + labelOffset, y + 5, d.pct_label, {
+      class: 'pct-label', fill: COLORS.pctLabel, 'text-anchor': anchor
+    });
+
+    // Genre label (multi-line, right-aligned)
+    const lines = d.genre_label.split('\n');
+    const lh = 15;
+    const topY = y - ((lines.length - 1) * lh) / 2 + 4;
+    const tEl = el('text', { x: labelRightX, y: topY, class: 'genre-label', 'text-anchor': 'end' });
+    lines.forEach((line, li) => {
+      const ts = document.createElementNS(SVGNS, 'tspan');
+      ts.setAttribute('x', labelRightX);
+      if (li > 0) ts.setAttribute('dy', lh);
+      ts.textContent = line;
+      tEl.appendChild(ts);
+    });
+  });
+
+  // X-axis baseline + ticks
+  el('line', { x1: plotX, x2: plotX + plotW, y1: plotY + plotH, y2: plotY + plotH,
+               stroke: COLORS.axis, 'stroke-width': 1 });
+  xTicks.forEach(t => {
+    el('line', { x1: xS(t), x2: xS(t), y1: plotY + plotH, y2: plotY + plotH + 4,
+                 stroke: COLORS.axis, 'stroke-width': 1 });
+    txt(xS(t), plotY + plotH + 20, fmtCurrency(t),
+        { class: 'tick', 'text-anchor': 'middle' });
+  });
+
+  // X-axis title
+  txt(plotX + plotW / 2, plotY + plotH + 50, 'Launch-window revenue per book',
+      { class: 'axis-label', 'text-anchor': 'middle' });
+  txt(plotX + plotW / 2, plotY + plotH + 68, '(pre-sales + 90 days post-release)',
+      { class: 'axis-label', 'text-anchor': 'middle' });
+}
+
+renderPanelA();
+renderPanelB();
+
+renderDumbbellPanel({
+  headerX: 15,    headerY: 558,
+  letter: 'C.', title: 'Revenue per book declined in almost every genre',
+  subtitleY: 582, subtitle: 'Revenue per book, 2023 versus 2025 release cohorts',
+  labelRightX: 180,
+  plotX: 195, plotY: 640, plotW: 365, plotH: 280,
+  scope: 'Overall', showLegend: true,
+});
+
+renderDumbbellPanel({
+  headerX: 615,    headerY: 558,
+  letter: 'D.', title: 'Revenue per book declined for books with no AI text too',
+  subtitleY: 582,  subtitle: 'Revenue per book, 2023 versus 2025 release cohorts, books with no AI text only',
+  labelRightX: 780,
+  plotX: 795, plotY: 640, plotW: 365, plotH: 280,
+  scope: 'No AI text', showLegend: true,
+});
+</script>
+</body>
+</html>
